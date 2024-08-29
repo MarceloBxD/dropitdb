@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId     String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName  String
+  lastName   String
+  email      String   @unique
+  phone      String?
+  profilePic String?
+  password   String
+  members    Member[] // Relacionamento com membros de grupos
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Group {
+  groupId   String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  groupPic  String?
+  members   Member[] // Relacionamento com membros
+  awards    Award[]
+  goals     Goal[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Member {
+  memberId         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @db.ObjectId
+  credits          Int? // Opcional
+  points           Int? // Opcional
+  group            Group    @relation(fields: [groupId], references: [groupId])
+  groupId          String   @db.ObjectId
+  user             User     @relation(fields: [userId], references: [userId])
+  Goal             Goal?    @relation(fields: [goalGoalId], references: [goalId])
+  goalGoalId       String?  @db.ObjectId
+  SubGoal          SubGoal? @relation(fields: [subGoalSubGoalId], references: [subGoalId])
+  subGoalSubGoalId String?  @db.ObjectId
+}
+
+model Award {
+  awardId      String       @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  description  String
+  goal         Goal?        @relation(fields: [goalId], references: [goalId])
+  goalId       String?      @db.ObjectId
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  Group        Group?       @relation(fields: [groupGroupId], references: [groupId])
+  groupGroupId String?      @db.ObjectId
+  AwardLevel   AwardLevel[]
+}
+
+model Goal {
+  goalId          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  description     String
+  deadline        DateTime
+  completed       Boolean   @default(false)
+  progressCurrent Int       @default(0)
+  progressTotal   Int
+  group           Group     @relation(fields: [groupId], references: [groupId])
+  groupId         String    @db.ObjectId
+  awards          Award[]
+  subGoals        SubGoal[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  Member          Member[]
+}
+
+model SubGoal {
+  subGoalId       String       @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  description     String
+  deadline        DateTime
+  completed       Boolean      @default(false)
+  progressCurrent Int          @default(0)
+  progressTotal   Int
+  goal            Goal         @relation(fields: [goalId], references: [goalId])
+  goalId          String       @db.ObjectId
+  awardLevels     AwardLevel[]
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  Member          Member[]
+}
+
+model AwardLevel {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  level      Int
+  multiplier Int     @default(1)
+  random     Boolean @default(false)
+  award      Award?  @relation(fields: [awardId], references: [awardId])
+  credit     Int? // Valor alternativo ao prêmio
+  awardId    String? @db.ObjectId
+  subGoal    SubGoal @relation(fields: [subGoalId], references: [subGoalId])
+  subGoalId  String  @db.ObjectId
+}
