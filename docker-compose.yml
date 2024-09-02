@@ -6,7 +6,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - MONGODB_URI=mongodb://mongo:27017/dropitdb
+      - DATABASE_URL=mongodb+srv://marcelobracet1:bracet123@dropitcluster.tlsth.mongodb.net/test
     depends_on:
       - mongo
 
